@@ -7,6 +7,7 @@ import json
 # ASCII Start Transmission. It's the best I can come up with
 # for a sentinel 'start of sentence' marker (´・ω・`)
 STX = '\x02'
+ETX = '\x03'
 
 
 def normalize(xs):
@@ -27,7 +28,7 @@ def generate_next_word_graph(text):
     counts = defaultdict(lambda: defaultdict(int))
     for line in text:
         words = line.split()
-        word_pairs = zip(chain([STX], words), words)
+        word_pairs = zip(([STX] + words), words + [ETX])
         for word, next in word_pairs:
             counts[word][next] += 1
     return counts
@@ -37,15 +38,20 @@ def serialze_next_word_graph(graph):
     print(json.dumps(graph))
 
 
-def output_stream(word_graph):
-    prev = STX
+def sentence(word_graph):
+    choces = word_graph[STX]
+    next = None
     while True:
-        next_words = word_graph[prev]
-        if not next_words.keys():
-            next_words = word_graph[STX]
-        prev = np.random.choice(list(next_words.keys()),
-                                p=normalize(next_words.values()))
-        yield prev
+        if not choces.keys():
+            choces = word_graph[STX]
+
+        next = np.random.choice(list(choces.keys()),
+                                p=normalize(choces.values()))
+        if next == ETX:
+            break
+
+        choces = word_graph[next]
+        yield next
 
 
 def main(*, training_file='tweets/tweets.txt', n=10):
@@ -53,11 +59,11 @@ def main(*, training_file='tweets/tweets.txt', n=10):
     training_file: source text on which to train the bot
     n: number of words of output to generate
     '''
-    with open('tweets/tweets.txt', 'r') as f:
+    with open(training_file, 'r') as f:
         words = generate_next_word_graph(f)
+    for _ in range(n):
+        print(' '.join(list(sentence(words))))
 
-    for sentence in islice(output_stream(words), n):
-        print(sentence, end=' ')
 
 if __name__ == '__main__':
     from clize import run
