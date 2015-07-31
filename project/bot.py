@@ -54,7 +54,7 @@ def sentence(word_graph):
         yield next
 
 
-def main(*, training_file='tweets/tweets.txt', n=10):
+def main(*, training_file='texts/tweets.txt', n=10):
     '''Build Markov chain from training file, and generate n words of output
     training_file: source text on which to train the bot
     n: number of words of output to generate

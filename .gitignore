@@ -1,4 +1,4 @@
-project/tweets
+project/texts
 project/__pycache__
 project/*.pyc
 project/*.json
