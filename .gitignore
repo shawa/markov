@@ -1,0 +1,6 @@
+project/tweets
+project/__pycache__
+project/*.pyc
+project/*.json
+project/*.txt
+env
