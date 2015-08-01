@@ -39,30 +39,34 @@ def serialze_next_word_graph(graph):
 
 
 def sentence(word_graph):
-    choces = word_graph[STX]
+    choices = word_graph[STX]
     next = None
     while True:
-        if not choces.keys():
-            choces = word_graph[STX]
+        if not choices.keys():
+            choices = word_graph[STX]
 
-        next = np.random.choice(list(choces.keys()),
-                                p=normalize(choces.values()))
+        next = np.random.choice(list(choices.keys()),
+                                p=normalize(choices.values()))
         if next == ETX:
             break
 
-        choces = word_graph[next]
+        choices = word_graph[next]
         yield next
 
 
-def main(*, training_file='texts/tweets.txt', n=10):
+def main(*, training_file='texts/tweets.txt', n=10, s=False):
     '''Build Markov chain from training file, and generate n words of output
     training_file: source text on which to train the bot
     n: number of words of output to generate
+    s: if true, will serialize graph instead of outputting text
     '''
     with open(training_file, 'r') as f:
         words = generate_next_word_graph(f)
-    for _ in range(n):
-        print(' '.join(list(sentence(words))))
+    if s:
+        serialze_next_word_graph(words)
+    else:
+        for _ in range(n):
+            print(' '.join(list(sentence(words))))
 
 
 if __name__ == '__main__':
