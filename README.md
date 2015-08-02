@@ -10,7 +10,7 @@ Simply run `bot.py <training corpus>` to start generating (usually humorous) tex
 
 Originally I was intending to write a twitter bot, trained on my twitter archive.
 [Grab your archive](https://support.twitter.com/articles/20170160) from here,
-and run `extract_tweets.sh $TWITTER_ARCHIVE_DIRECTORY > tweets.txt` (requires the marvellous [jq](http://stedolan.github.io/jq/).
+and run `extract_tweets.sh $TWITTER_ARCHIVE_DIRECTORY > tweets.txt` (requires the marvellous [jq](http://stedolan.github.io/jq/)).
 Now use `tweets.txt` as the training set and see what comes out.
 
 These are always more fun when you [mix training sets](http://kingjamesprogramming.tumblr.com),
