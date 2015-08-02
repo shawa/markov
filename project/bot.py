@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
-from collections import defaultdict
 from itertools import islice, chain
+from collections import Counter
 import numpy as np
+import random
 import json
+import networkx as nx
 
-# ASCII Start Transmission. It's the best I can come up with
-# for a sentinel 'start of sentence' marker (´・ω・`)
+# ASCII Start/End text. It's the best I can come up with
+# for a sentinel 'start of sentence' marker that won't show up
+# in training text (´・ω・`)
 STX = '\x02'
 ETX = '\x03'
 
@@ -25,13 +28,17 @@ def generate_next_word_graph(text):
     # is a word, and each edge (v_i, v_j) models v_j appearing in the text
     # after v_i.  Edge weights w_ij denote frequency, that is w_ij > w_ik
     # implies v_j appears more frequently after v_k
-    counts = defaultdict(lambda: defaultdict(int))
-    for line in text:
-        words = line.split()
-        word_pairs = zip(([STX] + words), words + [ETX])
-        for word, next in word_pairs:
-            counts[word][next] += 1
+    def word_pairs():
+        for line in text:
+            words = line.split()
+            yield (zip(([STX] + words), words + [ETX]))
+    counted_pairs = Counter(chain(*word_pairs())).items()
+    weigthed_edges = ((u, v, w) for ((u, v), w) in counted_pairs)
+    counts = nx.DiGraph()
+    counts.add_weighted_edges_from(weigthed_edges)
     return counts
+
+# TODO: counter
 
 
 def serialze_next_word_graph(graph):
@@ -39,19 +46,16 @@ def serialze_next_word_graph(graph):
 
 
 def sentence(word_graph):
-    choices = word_graph[STX]
-    next = None
+    current = STX
     while True:
-        if not choices.keys():
-            choices = word_graph[STX]
-
-        next = np.random.choice(list(choices.keys()),
-                                p=normalize(choices.values()))
-        if next == ETX:
+        neighbours = word_graph[current]
+        words = list(neighbours.keys())
+        weights = [attr['weight'] for attr in neighbours.values()]
+        current = np.random.choice(words, p=normalize(weights))
+        if current == ETX:
             break
-
-        choices = word_graph[next]
-        yield next
+        else:
+            yield current
 
 
 def main(*, training_file='texts/tweets.txt', n=10, s=False):
@@ -66,7 +70,10 @@ def main(*, training_file='texts/tweets.txt', n=10, s=False):
         serialze_next_word_graph(words)
     else:
         for _ in range(n):
-            print(' '.join(list(sentence(words))))
+            for word in sentence(words):
+                print(word, end=' ')
+            print()
+
 
 
 if __name__ == '__main__':
