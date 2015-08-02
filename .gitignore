@@ -1,6 +1,3 @@
-project/texts
-project/__pycache__
-project/*.pyc
-project/*.json
-project/*.txt
+src/texts
+src/__pycache__
 env

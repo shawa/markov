@@ -1,0 +1,6 @@
+clize==3.0
+decorator==4.0.2
+networkx==1.10
+numpy==1.9.2
+sigtools==1.0
+six==1.9.0
