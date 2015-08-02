@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-from itertools import islice, chain
 from collections import Counter
-import numpy as np
-import networkx as nx
+from itertools import chain
+from networkx import DiGraph
+from numpy.random import choice
 
-# ASCII Start/End text. It's the best I can come up with # for a sentinel
-# 'start of sentence' marker that probably won't show up in training texts
-# ¯\_(ツ)_/¯
+# ASCII Start/End text control characters. It's the best I can come up with
+# for a sentinel 'start of sentence' marker that probably won't show up in
+# training texts # ¯\_(ツ)_/¯
 START = '\x02'
 END = '\x03'
 
@@ -31,7 +31,7 @@ class Markov(object):
 
         counted_pairs = Counter(chain(*word_pairs())).items()
         weighted_edges = ((u, v, w) for ((u, v), w) in counted_pairs)
-        self.graph = nx.DiGraph()
+        self.graph = DiGraph()
         self.graph.add_weighted_edges_from(weighted_edges)
 
     def sentence(self):
@@ -49,25 +49,25 @@ class Markov(object):
             neighbours = self.graph[current]
             words = list(neighbours.keys())
             weights = [attr['weight'] for attr in neighbours.values()]
-            current = np.random.choice(words, p=normalize(weights))
+            current = choice(words, p=normalize(weights))
             if current == END:
                 break
             else:
                 yield current
 
 
-def main(training_file='texts/tweets.txt', n=10):
-    '''Build Markov chain from training file, and generate n words of output
-    training_file: source text on which to train the bot
-    n: number of lines of output to generate
-    '''
-    with open(training_file, 'r') as f:
-        bot = Markov(f)
-
-    for _ in range(n):
-        print(' '.join(list(bot.sentence())))
-
-
 if __name__ == '__main__':
     from clize import run
+
+    def main(training_file='texts/tweets.txt', n=10):
+        '''Build Markov chain from training file, and generate n words of output
+        training_file: source text on which to train the bot
+        n: number of lines of output to generate
+        '''
+        with open(training_file, 'r') as f:
+            bot = Markov(f)
+
+        for _ in range(n):
+            print(' '.join(list(bot.sentence())))
+
     run(main)
